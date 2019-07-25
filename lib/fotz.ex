@@ -1,22 +1,4 @@
 defmodule Fotz do
-  @extensions [
-    "jpg",
-    "jpeg",
-    "mov",
-    "mp4",
-    "mpg",
-    "avi"
-  ]
-
-  @maps_endpoint "https://api.opencagedata.com/geocode/v1/json"
-
-  @dates [
-    "DateTime",
-    "DateTimeOriginal",
-    "FileCreateDate",
-    "FileModifyDate"
-  ]
-
   def main(argv) do
     argv
     |> parse_opts()
@@ -51,112 +33,15 @@ defmodule Fotz do
     |> Enum.into(%{})
   end
 
-  def process(%{source: _, dest: _, format: _} = opts) do
-    files = files_from_dir(opts.source)
-
-    Enum.each(files, fn file ->
-      exif(file)
-      |> get_best_date()
-      |> inspect()
-      |> IO.puts()
-    end)
-  end
-
-  def process(_) do
+  def process(%{help: true}) do
     exit(:normal)
   end
 
-  def files_from_dir(dir) do
-    dir =
-      dir
-      |> String.trim()
-      |> String.replace("\\", "/")
-      |> Path.expand()
-      |> String.trim_trailing("/")
-
-    joined_extensions = Enum.join(@extensions, ",")
-    joined_up_extensions = String.upcase(joined_extensions)
-
-    (dir <> "/**/*.{#{joined_extensions},#{joined_up_extensions}}")
-    |> Path.wildcard()
+  def process(%{source: _, dest: _, format: _} = opts) do
+    opts
   end
 
-  def file_extension(file) do
-    file
-    |> Path.extname()
-    |> String.trim_leading(".")
-    |> String.downcase()
-  end
-
-  def exif(file) do
-    {json, 0} = System.cmd("exiftool", ["-json", "-q", file])
-    {:ok, [data]} = Jason.decode(json)
-
-    data
-  end
-
-  def make_valid_date(dity_date) do
-    [date, time] = String.split(dity_date, " ")
-
-    date =
-      String.split(date, ":")
-      |> Enum.join("-")
-
-    {:ok, new_date} = NaiveDateTime.from_iso8601(date <> " " <> time)
-
-    new_date
-  end
-
-  def get_best_date(exif) do
-    exif
-    |> Enum.filter(fn i -> elem(i, 0) in @dates end)
-    |> Enum.map(fn i -> make_valid_date(elem(i, 1)) end)
-    |> Enum.reduce(NaiveDateTime.utc_now(), fn i, acc ->
-      if i < acc, do: i, else: acc
-    end)
-  end
-
-  def dms_to_degrees(dms) do
-    regex = ~r{(?<deg>\d+) deg (?<min>\d+)' (?<sec>\d+\.\d+)" (?<dir>[S|s|W|w|N|n|E|e])}
-    capture = Regex.named_captures(regex, dms)
-    directions = [s: -1, w: -1, n: 1, e: 1]
-    degrees = String.to_integer(capture["deg"])
-    minutes = String.to_integer(capture["min"])
-    seconds = String.to_float(capture["sec"])
-
-    direction =
-      capture["dir"]
-      |> String.downcase()
-      |> String.to_atom()
-
-    {:ok, direction} = Keyword.fetch(directions, direction)
-
-    ((degrees + minutes / 60 + seconds / 3600) * direction)
-    |> Float.round(7)
-  end
-
-  def gps(lat, lng, api_key, language \\ nil) do
-    language = language || "native"
-
-    query = %{
-      q: "#{lat},#{lng}",
-      key: api_key,
-      language: language
-    }
-
-    url = @maps_endpoint <> "?" <> URI.encode_query(query)
-
-    {:ok, %{body: response, status_code: 200}} = HTTPoison.get(url)
-    {:ok, %{"results" => results}} = Jason.decode(response)
-
-    List.first(results)["components"]
-  end
-
-  def md5(file) do
-    {:ok, content} = File.read(file)
-
-    :crypto.hash(:md5, content)
-    |> Base.encode16()
-    |> String.downcase()
+  def process(_) do
+    process(%{help: true})
   end
 end
