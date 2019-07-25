@@ -10,6 +10,13 @@ defmodule Fotz do
 
   @maps_endpoint "https://api.opencagedata.com/geocode/v1/json"
 
+  @dates [
+    "DateTime",
+    "DateTimeOriginal",
+    "FileCreateDate",
+    "FileModifyDate"
+  ]
+
   def main(argv) do
     argv
     |> parse_opts()
@@ -20,9 +27,10 @@ defmodule Fotz do
     argv
     |> OptionParser.parse(
       strict: [
-        help: :boolean
+        help: :boolean,
         source: :string,
         dest: :string,
+        format: :string,
         geokey: :string,
         language: :string,
         move: :boolean,
@@ -32,6 +40,7 @@ defmodule Fotz do
         h: :help,
         s: :source,
         d: :dest,
+        f: :format,
         k: :geokey,
         l: :language,
         m: :move,
@@ -42,8 +51,15 @@ defmodule Fotz do
     |> Enum.into(%{})
   end
 
-  def process(%{source: _, dest: _} = opts) do
-    opts
+  def process(%{source: _, dest: _, format: _} = opts) do
+    files = files_from_dir(opts.source)
+
+    Enum.each(files, fn file ->
+      exif(file)
+      |> get_best_date()
+      |> inspect()
+      |> IO.puts()
+    end)
   end
 
   def process(_) do
@@ -79,6 +95,27 @@ defmodule Fotz do
     data
   end
 
+  def make_valid_date(dity_date) do
+    [date, time] = String.split(dity_date, " ")
+
+    date =
+      String.split(date, ":")
+      |> Enum.join("-")
+
+    {:ok, new_date} = NaiveDateTime.from_iso8601(date <> " " <> time)
+
+    new_date
+  end
+
+  def get_best_date(exif) do
+    exif
+    |> Enum.filter(fn i -> elem(i, 0) in @dates end)
+    |> Enum.map(fn i -> make_valid_date(elem(i, 1)) end)
+    |> Enum.reduce(NaiveDateTime.utc_now(), fn i, acc ->
+      if i < acc, do: i, else: acc
+    end)
+  end
+
   def dms_to_degrees(dms) do
     regex = ~r{(?<deg>\d+) deg (?<min>\d+)' (?<sec>\d+\.\d+)" (?<dir>[S|s|W|w|N|n|E|e])}
     capture = Regex.named_captures(regex, dms)
@@ -95,7 +132,7 @@ defmodule Fotz do
     {:ok, direction} = Keyword.fetch(directions, direction)
 
     ((degrees + minutes / 60 + seconds / 3600) * direction)
-    |> Float.round(6)
+    |> Float.round(7)
   end
 
   def gps(lat, lng, api_key, language \\ nil) do
