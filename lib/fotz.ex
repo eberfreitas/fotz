@@ -1,4 +1,8 @@
 defmodule Fotz do
+  def hello() do
+    :world
+  end
+
   def main(argv) do
     argv
     |> parse_opts()
