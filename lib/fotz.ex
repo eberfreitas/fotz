@@ -37,15 +37,7 @@ defmodule Fotz do
     |> Enum.into(%{})
   end
 
-  def process(%{help: true}) do
-    exit(:normal)
-  end
-
   def process(%{source: _, dest: _, format: _} = opts) do
     opts
-  end
-
-  def process(_) do
-    process(%{help: true})
   end
 end

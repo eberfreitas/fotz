@@ -18,7 +18,7 @@ defmodule Fotz.Exif do
   @spec exif(String.t()) :: map
   def exif(file) do
     {json, 0} = System.cmd("exiftool", ["-json", "-q", file])
-    {:ok, [data]} = Jason.decode(json)
+    {:ok, [data | _]} = Jason.decode(json)
 
     data
   end
@@ -26,7 +26,7 @@ defmodule Fotz.Exif do
   @doc """
   Receives a map with exif data and extracts the best date to use as the
   original file date. Look at the `@dates` module attribute to check what is
-  inpected. Gets the oldest date from the available keys and returns a
+  inspected. Gets the oldest date from the available keys and returns a
   NaiveDateTime value.
   """
   @spec get_date(map) :: NaiveDateTime.t()

@@ -3,7 +3,7 @@ defmodule Fotz.GPS do
   Interacts with the Open Cage API to get info from GPS data.
   """
 
-  @maps_endpoint "https://api.opencagedata.com/geocode/v1/json"
+  @type coordinate :: String.t() | float
 
   @directions [s: -1, w: -1, n: 1, e: 1]
 
@@ -13,8 +13,22 @@ defmodule Fotz.GPS do
   It defaults to "native". See the Open Cage API
   [docs](https://opencagedata.com/api#language) to know more.
   """
-  @spec gps(float, float, String.t(), String.t() | nil) :: map
-  def gps(lat, lng, api_key, language \\ nil) do
+  @spec gps(coordinate, coordinate, String.t(), String.t(), String.t()) :: map
+  def gps(
+        lat,
+        lng,
+        api_key,
+        language \\ "native",
+        endpoint \\ "https://api.opencagedata.com/geocode/v1/json"
+      )
+
+  def gps(lat, lng, api_key, language, endpoint)
+      when is_binary(lat)
+      when is_binary(lng) do
+    gps(dms_to_decimal(lat), dms_to_decimal(lng), api_key, language, endpoint)
+  end
+
+  def gps(lat, lng, api_key, language, endpoint) do
     language = language || "native"
 
     query = %{
@@ -23,12 +37,20 @@ defmodule Fotz.GPS do
       language: language
     }
 
-    url = @maps_endpoint <> "?" <> URI.encode_query(query)
+    {:ok, %{body: response, status_code: 200}} = get(endpoint, query)
+    {:ok, %{"results" => [results | _]}} = Jason.decode(response)
 
-    {:ok, %{body: response, status_code: 200}} = HTTPoison.get(url)
-    {:ok, %{"results" => results}} = Jason.decode(response)
+    results["components"]
+  end
 
-    List.first(results)["components"]
+  @doc """
+  Simple wrapper around `HTTPoison.get/3`.
+  """
+  @spec get(String.t(), map) ::
+          {:ok, HTTPoison.Response.t() | HTTPoison.AsyncResponse.t()}
+          | {:error, HTTPoison.Error.t()}
+  def get(endpoint, query) do
+    HTTPoison.get(endpoint <> "?" <> URI.encode_query(query))
   end
 
   @doc """
