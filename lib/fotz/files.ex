@@ -28,9 +28,9 @@ defmodule Fotz.Files do
 
     joined_extensions = Enum.join(@extensions, ",")
     joined_up_extensions = String.upcase(joined_extensions)
+    final_path = dir <> "/**/*.{#{joined_extensions},#{joined_up_extensions}}"
 
-    (dir <> "/**/*.{#{joined_extensions},#{joined_up_extensions}}")
-    |> Path.wildcard()
+    Path.wildcard(final_path)
   end
 
   @doc """
