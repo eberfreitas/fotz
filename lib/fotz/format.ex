@@ -27,28 +27,28 @@ defmodule Fotz.Format do
   file or as the new name of a moved file.
   """
   @type t :: %__MODULE__{
-    year: integer | nil,
-    month: integer | nil,
-    day: integer | nil,
-    hour: integer | nil,
-    minutes: integer | nil,
-    seconds: integer | nil,
-    hash: String.t() | nil,
-    smallhash: String.t() | nil,
-    city: String.t() | nil,
-    state: String.t() | nil,
-    country: String.t() | nil,
-    camera: String.t() | nil,
-    ext: String.t() | nil,
-    original: String.t() | nil
-  }
+          year: integer | nil,
+          month: integer | nil,
+          day: integer | nil,
+          hour: integer | nil,
+          minutes: integer | nil,
+          seconds: integer | nil,
+          hash: String.t() | nil,
+          smallhash: String.t() | nil,
+          city: String.t() | nil,
+          state: String.t() | nil,
+          country: String.t() | nil,
+          camera: String.t() | nil,
+          ext: String.t() | nil,
+          original: String.t() | nil
+        }
 
   @doc """
   Compiles the mustache `template` with the `data`.
   """
   @spec compile(String.t(), t()) :: String.t()
   def compile(template, data) do
-    Mustachex.render(template, data |> Map.from_struct)
+    Mustachex.render(template, data |> Map.from_struct())
   end
 
   @doc """

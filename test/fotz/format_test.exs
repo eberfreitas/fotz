@@ -9,11 +9,14 @@ defmodule Fotz.FormatTest do
     data = %Format{ext: "jpg", original: "DSC0001"}
 
     assert Format.compile("{{original}}.{{ext}}", data) == "DSC0001.jpg"
-    assert Format.compile("{{original}}{{#camera}} {{camera}}{{/camera}}.{{ext}}", data) == "DSC0001.jpg"
+
+    assert Format.compile("{{original}}{{#camera}} {{camera}}{{/camera}}.{{ext}}", data) ==
+             "DSC0001.jpg"
 
     data = Map.put(data, :camera, "CANON")
 
-    assert Format.compile("{{original}}{{#camera}} {{camera}}{{/camera}}.{{ext}}", data) == "DSC0001 CANON.jpg"
+    assert Format.compile("{{original}}{{#camera}} {{camera}}{{/camera}}.{{ext}}", data) ==
+             "DSC0001 CANON.jpg"
   end
 
   test "is template valid?" do
