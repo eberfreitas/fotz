@@ -24,7 +24,8 @@ defmodule Fotz.MixProject do
       {:bypass, "~> 1.0", only: :test},
       {:dialyxir, "~> 0.5", only: :dev, runtime: false},
       {:httpoison, "~> 1.4"},
-      {:jason, "~> 1.1"}
+      {:jason, "~> 1.1"},
+      {:mockery, "~> 2.3.0", runtime: false}
     ]
   end
 end

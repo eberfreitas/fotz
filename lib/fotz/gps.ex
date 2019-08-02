@@ -3,6 +3,8 @@ defmodule Fotz.GPS do
   Interacts with the Open Cage API to get info from GPS data.
   """
 
+  import Mockery.Macro
+
   @type coordinate :: String.t() | float
 
   @directions [s: -1, w: -1, n: 1, e: 1]
@@ -43,14 +45,11 @@ defmodule Fotz.GPS do
     results["components"]
   end
 
-  @doc """
-  Simple wrapper around `HTTPoison.get/3`.
-  """
   @spec get(String.t(), map) ::
           {:ok, HTTPoison.Response.t() | HTTPoison.AsyncResponse.t()}
           | {:error, HTTPoison.Error.t()}
-  def get(endpoint, query) do
-    HTTPoison.get(endpoint <> "?" <> URI.encode_query(query))
+  defp get(endpoint, query) do
+    mockable(HTTPoison).get(endpoint <> "?" <> URI.encode_query(query), [], [])
   end
 
   @doc """
