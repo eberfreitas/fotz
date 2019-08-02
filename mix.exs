@@ -25,7 +25,9 @@ defmodule Fotz.MixProject do
       {:dialyxir, "~> 0.5", only: :dev, runtime: false},
       {:httpoison, "~> 1.4"},
       {:jason, "~> 1.1"},
-      {:mockery, "~> 2.3.0", runtime: false}
+      {:mockery, "~> 2.3.0", runtime: false},
+      {:mustachex, "~> 0.0.2"},
+      {:optimus, "~> 0.1.0"}
     ]
   end
 end
