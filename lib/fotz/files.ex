@@ -45,6 +45,16 @@ defmodule Fotz.Files do
   end
 
   @doc """
+  Returns the file name without the extension.
+  """
+  @spec file_name(String.t()) :: String.t()
+  def file_name(file) do
+    file
+    |> Path.basename()
+    |> String.replace(Path.extname(file), "")
+  end
+
+  @doc """
   Gets the md5 of a file's content.
   """
   @spec md5(String.t()) :: String.t()

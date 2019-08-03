@@ -19,4 +19,10 @@ defmodule Fotz.FilesTest do
   test "md5 file" do
     assert Files.md5("./test/_samples/001.jpg") == "5f69d520fb4308355453b4060eb456fa"
   end
+
+  test "file name" do
+    assert Files.file_name("test.jpg") == "test"
+    assert Files.file_name("directory/file.png") == "file"
+    assert Files.file_name("../something/ELSE.PNG") == "ELSE"
+  end
 end

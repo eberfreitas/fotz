@@ -1,7 +1,5 @@
 defmodule Fotz do
-  def hello() do
-    :world
-  end
+  def hello(), do: :world
 
   def main(argv) do
     argv
