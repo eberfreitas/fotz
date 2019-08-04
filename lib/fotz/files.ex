@@ -19,13 +19,6 @@ defmodule Fotz.Files do
   """
   @spec files_from_dir(String.t()) :: [binary]
   def files_from_dir(dir) do
-    dir =
-      dir
-      |> String.trim()
-      |> String.replace("\\", "/")
-      |> Path.expand()
-      |> String.trim_trailing("/")
-
     joined_extensions = Enum.join(@extensions, ",")
     joined_up_extensions = String.upcase(joined_extensions)
     final_path = dir <> "/**/*.{#{joined_extensions},#{joined_up_extensions}}"
@@ -64,5 +57,24 @@ defmodule Fotz.Files do
     :crypto.hash(:md5, content)
     |> Base.encode16()
     |> String.downcase()
+  end
+
+  @doc """
+  Receives a directory path and normalizes it for futher inspection and
+  manipulation.
+  """
+  @spec normalize_dir(String.t()) :: :error | String.t()
+  def normalize_dir(dir) do
+    normalized =
+      dir
+      |> String.trim()
+      |> String.replace("\\", "/")
+      |> Path.expand()
+      |> String.trim_trailing("/")
+
+    case File.dir?(normalized) do
+      true -> normalized
+      _ -> :error
+    end
   end
 end

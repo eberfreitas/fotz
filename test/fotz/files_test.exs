@@ -6,7 +6,9 @@ defmodule Fotz.FilesTest do
   doctest Fotz.Files
 
   test "files from dir" do
-    files = Files.files_from_dir("./test/_samples")
+    files =
+      Files.normalize_dir("./test/_samples")
+      |> Files.files_from_dir()
 
     assert length(files) == 2
   end
@@ -24,5 +26,10 @@ defmodule Fotz.FilesTest do
     assert Files.file_name("test.jpg") == "test"
     assert Files.file_name("directory/file.png") == "file"
     assert Files.file_name("../something/ELSE.PNG") == "ELSE"
+  end
+
+  test "normalize dir" do
+    assert Files.normalize_dir("./test/_samples") != :error
+    assert Files.normalize_dir("anything") == :error
   end
 end
