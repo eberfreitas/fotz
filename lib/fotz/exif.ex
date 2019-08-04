@@ -35,7 +35,7 @@ defmodule Fotz.Exif do
   def exif(file) do
     with {json, 0} <- System.cmd(@exiftool, ["-json", "-q", file]),
          {:ok, [data | _]} <- Jason.decode(json) do
-      data
+      {:ok, data}
     else
       _ -> :error
     end
@@ -55,11 +55,14 @@ defmodule Fotz.Exif do
 
     cond do
       Enum.count(dates) > 0 ->
-        dates
-        |> Enum.map(fn i -> make_valid_date(elem(i, 1)) end)
-        |> Enum.reduce(NaiveDateTime.utc_now(), fn i, acc ->
-          if i < acc, do: i, else: acc
-        end)
+        date =
+          dates
+          |> Enum.map(fn i -> make_valid_date(elem(i, 1)) end)
+          |> Enum.reduce(NaiveDateTime.utc_now(), fn i, acc ->
+            if i < acc, do: i, else: acc
+          end)
+
+        {:ok, date}
 
       true ->
         :error
