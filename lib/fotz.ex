@@ -31,8 +31,8 @@ defmodule Fotz do
           short: "-s",
           long: "--source",
           help: "Source directory",
-          parser: :string,
-          required: true
+          required: true,
+          parser: fn source -> source end
         ],
         dest: [
           value_name: "DEST_DIR",
@@ -79,16 +79,6 @@ defmodule Fotz do
     move = args.flags.move
     apikey = args.options.apikey
     lang = args.options.lang
-
-    source =
-      case Files.normalize_dir(source) do
-        :error ->
-          IO.puts("Source directory is invalid.")
-          System.halt(1)
-
-        s ->
-          s
-      end
 
     dest =
       case Files.normalize_dir(dest) do

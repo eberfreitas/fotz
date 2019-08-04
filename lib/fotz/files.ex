@@ -63,7 +63,7 @@ defmodule Fotz.Files do
   Receives a directory path and normalizes it for futher inspection and
   manipulation.
   """
-  @spec normalize_dir(String.t()) :: :error | String.t()
+  @spec normalize_dir(String.t()) :: :error | {:ok, String.t()}
   def normalize_dir(dir) do
     normalized =
       dir
@@ -73,7 +73,7 @@ defmodule Fotz.Files do
       |> String.trim_trailing("/")
 
     case File.dir?(normalized) do
-      true -> normalized
+      true -> {:ok, normalized}
       _ -> :error
     end
   end

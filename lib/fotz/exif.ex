@@ -31,7 +31,7 @@ defmodule Fotz.Exif do
   Receives a `file` param from which we extract exif data using `exiftool`. The
   `file` param must be a string of the full path of the file.
   """
-  @spec exif(String.t()) :: :error | map
+  @spec exif(String.t()) :: :error | {:ok, map}
   def exif(file) do
     with {json, 0} <- System.cmd(@exiftool, ["-json", "-q", file]),
          {:ok, [data | _]} <- Jason.decode(json) do
@@ -47,7 +47,7 @@ defmodule Fotz.Exif do
   inspected. Gets the oldest date from the available keys and returns a
   NaiveDateTime value.
   """
-  @spec get_date(map) :: :error | NaiveDateTime.t()
+  @spec get_date(map) :: :error | {:ok, NaiveDateTime.t()}
   def get_date(exif) do
     dates =
       exif

@@ -14,7 +14,7 @@ defmodule Fotz.GPSTest do
       {:ok, %{body: response, status_code: 200}}
     end)
 
-    gps = GPS.gps("51 deg 29' 25.8\" N", "0 deg 01' 02.7\" W", "dummy")
+    {:ok, gps} = GPS.gps("51 deg 29' 25.8\" N", "0 deg 01' 02.7\" W", "dummy")
 
     assert Enum.empty?(gps) == false
   end

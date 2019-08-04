@@ -19,7 +19,7 @@ defmodule Fotz.GPS do
   It defaults to "native". See the Open Cage API
   [docs](https://opencagedata.com/api#language) to know more.
   """
-  @spec gps(coordinate, coordinate, String.t(), String.t(), String.t()) :: :error | map
+  @spec gps(coordinate, coordinate, String.t(), String.t(), String.t()) :: :error | {:ok, map}
   def gps(
         lat,
         lng,
@@ -46,7 +46,7 @@ defmodule Fotz.GPS do
     with {:ok, %{body: response, status_code: 200}} <- get(endpoint, query),
          {:ok, %{"results" => [results | _]}} <- Jason.decode(response),
          data = results["components"] do
-      data
+      {:ok, data}
     else
       _ -> :error
     end
