@@ -5,6 +5,10 @@ defmodule Fotz.GPS do
 
   import Mockery.Macro
 
+  @typedoc """
+  A signed float representing a coordinate (latitude or longitude) or a string
+  representing a DMS coordinate.
+  """
   @type coordinate :: String.t() | float
 
   @directions [s: -1, w: -1, n: 1, e: 1]
@@ -15,7 +19,7 @@ defmodule Fotz.GPS do
   It defaults to "native". See the Open Cage API
   [docs](https://opencagedata.com/api#language) to know more.
   """
-  @spec gps(coordinate, coordinate, String.t(), String.t(), String.t()) :: map
+  @spec gps(coordinate, coordinate, String.t(), String.t(), String.t()) :: :error | map
   def gps(
         lat,
         lng,
@@ -39,10 +43,13 @@ defmodule Fotz.GPS do
       language: language
     }
 
-    {:ok, %{body: response, status_code: 200}} = get(endpoint, query)
-    {:ok, %{"results" => [results | _]}} = Jason.decode(response)
-
-    results["components"]
+    with {:ok, %{body: response, status_code: 200}} <- get(endpoint, query),
+         {:ok, %{"results" => [results | _]}} <- Jason.decode(response),
+         data = results["components"] do
+      data
+    else
+      _ -> :error
+    end
   end
 
   @spec get(String.t(), map) ::
