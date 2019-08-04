@@ -1,4 +1,6 @@
 defmodule Fotz do
+  alias Fotz.{Files, Format}
+
   def hello(), do: :world
 
   def main(argv) do
@@ -68,10 +70,46 @@ defmodule Fotz do
       ]
     )
     |> Optimus.parse!(argv)
-    |> IO.inspect()
   end
 
-  def process(%{source: _, dest: _, format: _} = opts) do
-    opts
+  def process(args) do
+    source = args.options.source
+    dest = args.options.dest
+    format = args.options.format
+    move = args.flags.move
+    apikey = args.options.apikey
+    lang = args.options.lang
+
+    source =
+      case Files.normalize_dir(source) do
+        :error ->
+          IO.puts("Source directory is invalid.")
+          System.halt(1)
+
+        s ->
+          s
+      end
+
+    dest =
+      case Files.normalize_dir(dest) do
+        :error ->
+          IO.puts("Destination directory is invalid.")
+          System.halt(1)
+
+        s ->
+          s
+      end
+
+    if !Format.valid?(format) do
+      IO.puts("Format looks invalid.")
+      System.halt(1)
+    end
+
+    files = Files.files_from_dir(source)
+
+    if files == [] do
+      IO.puts("Source directory does not contain files to handle.")
+      System.halt(1)
+    end
   end
 end
