@@ -20,9 +20,9 @@ defmodule Fotz.FormatTest do
   end
 
   test "is template valid?" do
-    assert Format.valid?("{{nope}}.{{ext}}") == :invalid
-    assert Format.valid?("{{inexistent}} - {{inexistent}}.{{inexistent}}") == :invalid
-    assert Format.valid?("{{original}}.{{ext}}") == :valid
-    assert Format.valid?("{{{original}}}.{{ext}}}") == :invalid
+    assert Format.valid?("{{nope}}.{{ext}}") == false
+    assert Format.valid?("{{inexistent}} - {{inexistent}}.{{inexistent}}") == false
+    assert Format.valid?("{{original}}.{{ext}}") == true
+    assert Format.valid?("{{{original}}}.{{ext}}}") == false
   end
 end

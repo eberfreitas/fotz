@@ -54,7 +54,7 @@ defmodule Fotz.Format do
   @doc """
   Runs a bunch of tests to determine if the `template` is valid.
   """
-  @spec valid?(String.t()) :: :valid | :invalid
+  @spec valid?(String.t()) :: boolean
   def valid?(template) do
     structs = dummies()
 
@@ -62,10 +62,10 @@ defmodule Fotz.Format do
     compiled_two = compile(template, Enum.at(structs, 1))
 
     cond do
-      compiled_one == compiled_two -> :invalid
-      String.contains?(compiled_one, ["{", "}"]) -> :invalid
-      String.contains?(compiled_two, ["{", "}"]) -> :invalid
-      true -> :valid
+      compiled_one == compiled_two -> false
+      String.contains?(compiled_one, ["{", "}"]) -> false
+      String.contains?(compiled_two, ["{", "}"]) -> false
+      true -> true
     end
   end
 
