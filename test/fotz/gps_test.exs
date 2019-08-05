@@ -14,9 +14,13 @@ defmodule Fotz.GPSTest do
       {:ok, %{body: response, status_code: 200}}
     end)
 
-    {:ok, gps} = GPS.gps("51 deg 29' 25.8\" N", "0 deg 01' 02.7\" W", "dummy")
+    {:ok, gps} = GPS.gps("51 deg 29' 25.8\" N", "0 deg 01' 02.7\" W", "dummy", nil)
 
     assert Enum.empty?(gps) == false
+  end
+
+  test "trying to get gps without api key" do
+    assert GPS.gps("dummy", "dummy", nil, "dummy") == :error
   end
 
   test "dms to decimal" do

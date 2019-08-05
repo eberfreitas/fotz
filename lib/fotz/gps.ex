@@ -13,37 +13,51 @@ defmodule Fotz.GPS do
 
   @directions [s: -1, w: -1, n: 1, e: 1]
 
+  @endpoint "https://api.opencagedata.com/geocode/v1/json"
+
+  @doc """
+  Receives a map with GPS info comming from the Exif module. Transmits GPS
+  params to be executed by `Fotz.GPS.gps/4`.
+  """
+  @spec gps(map, String.t(), String.t()) :: :error | {:ok, map}
+  def gps(%{"GPSPosition" => _} = exif, apikey, language) do
+    gps(exif["GPSLatitude"], exif["GPSLongitude"], apikey, language)
+  end
+
+  def gps(exif, apikey, language) when is_map(exif), do: :error
+
   @doc """
   Receives the latitude, longitude and api key to get info from the Open Cage
   API. Optionaly you can pass a language param to get results in that language.
   It defaults to "native". See the Open Cage API
   [docs](https://opencagedata.com/api#language) to know more.
   """
-  @spec gps(coordinate, coordinate, String.t(), String.t(), String.t()) :: :error | {:ok, map}
+  @spec gps(coordinate, coordinate, String.t(), String.t()) :: :error | {:ok, map}
   def gps(
         lat,
         lng,
-        api_key,
-        language \\ "native",
-        endpoint \\ "https://api.opencagedata.com/geocode/v1/json"
+        apikey,
+        language
       )
 
-  def gps(lat, lng, api_key, language, endpoint)
+  def gps(lat, lng, nil, language), do: :error
+
+  def gps(lat, lng, apikey, language)
       when is_binary(lat)
       when is_binary(lng) do
-    gps(dms_to_decimal(lat), dms_to_decimal(lng), api_key, language, endpoint)
+    gps(dms_to_decimal(lat), dms_to_decimal(lng), apikey, language)
   end
 
-  def gps(lat, lng, api_key, language, endpoint) do
+  def gps(lat, lng, apikey, language) do
     language = language || "native"
 
     query = %{
       q: "#{lat},#{lng}",
-      key: api_key,
+      key: apikey,
       language: language
     }
 
-    with {:ok, %{body: response, status_code: 200}} <- get(endpoint, query),
+    with {:ok, %{body: response, status_code: 200}} <- get(query),
          {:ok, %{"results" => [results | _]}} <- Jason.decode(response),
          data = results["components"] do
       {:ok, data}
@@ -52,11 +66,11 @@ defmodule Fotz.GPS do
     end
   end
 
-  @spec get(String.t(), map) ::
+  @spec get(map) ::
           {:ok, HTTPoison.Response.t() | HTTPoison.AsyncResponse.t()}
           | {:error, HTTPoison.Error.t()}
-  defp get(endpoint, query) do
-    mockable(HTTPoison).get(endpoint <> "?" <> URI.encode_query(query), [], [])
+  defp get(query) do
+    mockable(HTTPoison).get(@endpoint <> "?" <> URI.encode_query(query), [], [])
   end
 
   @doc """
