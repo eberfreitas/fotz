@@ -17,13 +17,16 @@ defmodule Fotz.Files do
   files. Tries to find every supported file inside that path, including
   subfolders. Returns a list of all files.
   """
-  @spec files_from_dir(String.t()) :: [binary]
+  @spec files_from_dir(String.t()) :: :error | {:ok, [binary]}
   def files_from_dir(dir) do
     joined_extensions = Enum.join(@extensions, ",")
     joined_up_extensions = String.upcase(joined_extensions)
     final_path = dir <> "/**/*.{#{joined_extensions},#{joined_up_extensions}}"
 
-    Path.wildcard(final_path)
+    case files = Path.wildcard(final_path) do
+      [_ | _] -> {:ok, files}
+      [] -> :error
+    end
   end
 
   @doc """

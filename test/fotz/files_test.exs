@@ -8,7 +8,7 @@ defmodule Fotz.FilesTest do
   test "files from dir" do
     files =
       with {:ok, dir} <- Files.normalize_dir("./test/_samples"),
-           files <- Files.files_from_dir(dir) do
+           {:ok, files} <- Files.files_from_dir(dir) do
         files
       end
 
@@ -21,7 +21,7 @@ defmodule Fotz.FilesTest do
   end
 
   test "md5 file" do
-    assert Files.md5("./test/_samples/001.jpg") == "6b059bae51c47433a7d6bf39697e50d8"
+    assert Files.md5("./test/_samples/001.jpg") == "0f53f294791e1b4e167bc1587f2d99fe"
   end
 
   test "file name" do
