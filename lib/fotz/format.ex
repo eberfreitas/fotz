@@ -56,16 +56,20 @@ defmodule Fotz.Format do
   """
   @spec valid?(String.t()) :: boolean
   def valid?(template) do
-    structs = dummies()
+    try do
+      structs = dummies()
 
-    compiled_one = compile(template, Enum.at(structs, 0))
-    compiled_two = compile(template, Enum.at(structs, 1))
+      compiled_one = compile(template, Enum.at(structs, 0))
+      compiled_two = compile(template, Enum.at(structs, 1))
 
-    cond do
-      compiled_one == compiled_two -> false
-      String.contains?(compiled_one, ["{", "}"]) -> false
-      String.contains?(compiled_two, ["{", "}"]) -> false
-      true -> true
+      cond do
+        compiled_one == compiled_two -> false
+        String.contains?(compiled_one, ["{", "}"]) -> false
+        String.contains?(compiled_two, ["{", "}"]) -> false
+        true -> true
+      end
+    rescue
+      FunctionClauseError -> false
     end
   end
 
