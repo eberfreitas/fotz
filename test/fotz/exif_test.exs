@@ -12,8 +12,12 @@ defmodule Fotz.ExifTest do
   end
 
   test "file date from exif" do
-    {:ok, exif} = Exif.exif("./test/_samples/001.jpg")
+    # {:ok, exif} = Exif.exif("./test/_samples/001.jpg")
 
-    assert Exif.get_date(exif) == {:ok, ~N[2018-01-01 00:00:00]}
+    # assert Exif.get_date(exif) == {:ok, ~N[2018-01-01 00:00:00]}
+
+    {:ok, exif} = Exif.exif("./test/_samples/subdir/002.jpg")
+
+    assert Exif.get_date(exif) == {:ok, ~N[2002-01-01 12:00:00]}
   end
 end

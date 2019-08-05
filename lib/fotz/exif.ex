@@ -5,10 +5,12 @@ defmodule Fotz.Exif do
   """
 
   @dates [
+    "CreateDate",
     "DateTime",
     "DateTimeOriginal",
     "FileCreateDate",
-    "FileModifyDate"
+    "FileModifyDate",
+    "ModifyDate"
   ]
 
   @exiftool "exiftool"
@@ -58,8 +60,11 @@ defmodule Fotz.Exif do
         date =
           dates
           |> Enum.map(fn i -> make_valid_date(elem(i, 1)) end)
-          |> Enum.reduce(NaiveDateTime.utc_now(), fn i, acc ->
-            if i < acc, do: i, else: acc
+          |> Enum.reduce(NaiveDateTime.utc_now(), fn date, acc ->
+            case NaiveDateTime.compare(date, acc) do
+              :lt -> date
+              _ -> acc
+            end
           end)
 
         {:ok, date}
