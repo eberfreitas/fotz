@@ -12,7 +12,7 @@ defmodule Fotz.FilesTest do
         files
       end
 
-    assert length(files) == 2
+    assert length(files) == 3
   end
 
   test "file extension" do
@@ -33,5 +33,11 @@ defmodule Fotz.FilesTest do
   test "normalize dir" do
     assert Files.normalize_dir("./test/_samples") != :error
     assert Files.normalize_dir("anything") == :error
+  end
+
+  test "clean file name" do
+    assert Files.clean_filename("<<<test//test:*a|\\>>>") == "test test a"
+    assert Files.clean_filename("\t\n\rtest\t[]a") == "test a"
+    assert Files.clean_filename("nothing to do - here.jpg") == "nothing to do - here.jpg"
   end
 end

@@ -80,4 +80,15 @@ defmodule Fotz.Files do
       _ -> :error
     end
   end
+
+  @doc """
+  Removes undesired characters from a string which will be used as a file name.
+  """
+  @spec clean_filename(String.t()) :: String.t()
+  def clean_filename(name) do
+    name
+    |> String.replace(~r/[\\\/\:\*\?\"\<\>|\[\]\/{\}\+]/, " ")
+    |> String.replace(~r/\s+/, " ")
+    |> String.trim()
+  end
 end
