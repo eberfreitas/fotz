@@ -1,5 +1,5 @@
 defmodule Fotz do
-  alias Fotz.{Files, Format}
+  alias Fotz.{Exif, Files, Format, GPS}
 
   def hello(), do: :world
 
@@ -32,23 +32,38 @@ defmodule Fotz do
           long: "--source",
           help: "Source directory",
           required: true,
-          parser: fn source -> source end
+          parser: fn source ->
+            case Files.normalize_dir(source) do
+              {:ok, dir} -> {:ok, dir}
+              :error -> {:error, "Invalid source directory"}
+            end
+          end
         ],
         dest: [
           value_name: "DEST_DIR",
           short: "-d",
           long: "--dest",
           help: "Destination directory",
-          parser: :string,
-          required: true
+          required: true,
+          parser: fn dest ->
+            case Files.normalize_dir(dest) do
+              {:ok, dir} -> {:ok, dir}
+              :error -> {:error, "Invalid destination directory"}
+            end
+          end
         ],
         format: [
           value_name: "FORMAT",
           short: "-f",
           long: "--format",
           help: "The file name format this app should use to copy/move the files",
-          parser: :string,
-          required: true
+          required: true,
+          parser: fn format ->
+            case Format.valid?(format) do
+              true -> {:ok, format}
+              false -> {:error, "Format looks invalid"}
+            end
+          end
         ],
         apikey: [
           value_name: "API_KEY",
@@ -80,26 +95,58 @@ defmodule Fotz do
     apikey = args.options.apikey
     lang = args.options.lang
 
-    dest =
-      case Files.normalize_dir(dest) do
-        :error ->
-          IO.puts("Destination directory is invalid.")
-          System.halt(1)
+    files =
+      case Files.files_from_dir(source) do
+        {:ok, files} ->
+          files
 
-        s ->
-          s
+        :error ->
+          IO.puts("Source directory does not contain files to handle.")
+          System.halt(1)
       end
 
-    if !Format.valid?(format) do
-      IO.puts("Format looks invalid.")
-      System.halt(1)
-    end
+    files
+    |> Enum.each(&handle(&1, dest, move, apikey, lang))
+  end
 
-    files = Files.files_from_dir(source)
+  def handle(file, dest, move, apikey, lang) do
+    with {:ok, exif} <- Exif.exif(file),
+         {:ok, date} <- Exif.get_date(exif) do
+      hash = Files.md5(file)
 
-    if files == [] do
-      IO.puts("Source directory does not contain files to handle.")
-      System.halt(1)
+      gps =
+        case GPS.gps(exif, apikey, lang) do
+          {:ok, data} -> data
+          :error -> %{}
+        end
+
+      camera =
+        case Exif.camera(exif) do
+          {:ok, cam} -> cam
+          :error -> nil
+        end
+
+      format = %Format{
+        year: date.year |> to_string(),
+        month: date.month |> to_string() |> String.pad_leading(2, "0"),
+        day: date.day |> to_string() |> String.pad_leading(2, "0"),
+        hour: date.hour |> to_string() |> String.pad_leading(2, "0"),
+        minutes: date.minute |> to_string() |> String.pad_leading(2, "0"),
+        seconds: date.second |> to_string() |> String.pad_leading(2, "0"),
+        hash: hash,
+        smallhash: String.slice(hash, 0..3),
+        city: gps |> Map.get("city"),
+        state: gps |> Map.get("state"),
+        country: gps |> Map.get("ISO_3166-1_alpha-2"),
+        camera: camera,
+        ext: Files.file_extension(file),
+        original: Files.file_name(file)
+      }
+
+      format
+      |> IO.inspect()
+    else
+      _ -> exit(:error)
     end
   end
 end
