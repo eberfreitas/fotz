@@ -27,20 +27,20 @@ defmodule Fotz.Format do
   file or as the new name of a moved file.
   """
   @type t :: %__MODULE__{
-          year: integer | nil,
-          month: integer | nil,
-          day: integer | nil,
-          hour: integer | nil,
-          minutes: integer | nil,
-          seconds: integer | nil,
-          hash: String.t() | nil,
-          smallhash: String.t() | nil,
+          year: String.t(),
+          month: String.t(),
+          day: String.t(),
+          hour: String.t(),
+          minutes: String.t(),
+          seconds: String.t(),
+          hash: String.t(),
+          smallhash: String.t(),
           city: String.t() | nil,
           state: String.t() | nil,
           country: String.t() | nil,
           camera: String.t() | nil,
-          ext: String.t() | nil,
-          original: String.t() | nil
+          ext: String.t(),
+          original: String.t()
         }
 
   @doc """
