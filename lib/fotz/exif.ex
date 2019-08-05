@@ -74,6 +74,24 @@ defmodule Fotz.Exif do
     end
   end
 
+  @doc """
+  Gets the camera used from the exif data.
+  """
+  @spec camera(map) :: :error | {:ok, String.t()}
+  def camera(exif) do
+    with {:ok, model} <- Map.fetch(exif, "Model") do
+      make =
+        case Map.fetch(exif, "Make") do
+          {:ok, make} -> " (" <> make <> ")"
+          :error -> ""
+        end
+
+      {:ok, model <> make}
+    else
+      :error -> :error
+    end
+  end
+
   @spec make_valid_date(String.t()) :: NaiveDateTime.t()
   defp make_valid_date(dirty_date) do
     [date, time] = String.split(dirty_date, " ")
