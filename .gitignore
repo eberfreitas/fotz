@@ -1,3 +1,4 @@
+/fotz
 /_build/
 /cover/
 /deps/
@@ -9,4 +10,3 @@ erl_crash.dump
 *.ez
 fotz-*.tar
 config.ini
-fotz
