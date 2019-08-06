@@ -36,7 +36,7 @@ defmodule Fotz.FilesTest do
   end
 
   test "clean file name" do
-    assert Files.clean_filename("<<<test//test:*a|\\>>>") == "test test a"
+    assert Files.clean_filename("<<<test/test:*a|\\>>>") == "test/test a"
     assert Files.clean_filename("\t\n\rtest\t[]a") == "test a"
     assert Files.clean_filename("nothing to do - here.jpg") == "nothing to do - here.jpg"
   end

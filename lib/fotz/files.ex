@@ -87,7 +87,7 @@ defmodule Fotz.Files do
   @spec clean_filename(String.t()) :: String.t()
   def clean_filename(name) do
     name
-    |> String.replace(~r/[\\\/\:\*\?\"\<\>|\[\]\/{\}\+]/, " ")
+    |> String.replace(~r/[\\\:\*\?\"\<\>|\[\]{\}\+]/, " ")
     |> String.replace(~r/\s+/, " ")
     |> String.trim()
   end
