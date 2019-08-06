@@ -3,6 +3,8 @@
 /deps/
 /doc/
 /.fetch
+/test/_samples/dest/*
+!/test/_samples/dest/empty
 erl_crash.dump
 *.ez
 fotz-*.tar
