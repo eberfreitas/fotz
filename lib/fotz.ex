@@ -4,6 +4,11 @@ defmodule Fotz do
   def hello(), do: :world
 
   def main(argv) do
+    if !Exif.exiftool?() do
+      IO.puts("You need to have exiftool installed to use this application")
+      System.halt(1)
+    end
+
     argv
     |> parse_opts()
     |> process()
@@ -106,10 +111,10 @@ defmodule Fotz do
       end
 
     files
-    |> Enum.each(&handle(&1, dest, move, apikey, lang))
+    |> Enum.each(&handle(&1, format, dest, move, apikey, lang))
   end
 
-  def handle(file, dest, move, apikey, lang) do
+  def handle(file, format, dest, move, apikey, lang) do
     with {:ok, exif} <- Exif.exif(file),
          {:ok, date} <- Exif.get_date(exif) do
       hash = Files.md5(file)
@@ -126,7 +131,7 @@ defmodule Fotz do
           :error -> nil
         end
 
-      format = %Format{
+      format_data = %Format{
         year: date.year |> to_string(),
         month: date.month |> to_string() |> String.pad_leading(2, "0"),
         day: date.day |> to_string() |> String.pad_leading(2, "0"),
@@ -135,15 +140,49 @@ defmodule Fotz do
         seconds: date.second |> to_string() |> String.pad_leading(2, "0"),
         hash: hash,
         smallhash: String.slice(hash, 0..3),
-        city: gps |> Map.get("city"),
-        state: gps |> Map.get("state"),
-        country: gps |> Map.get("ISO_3166-1_alpha-2"),
+        city:
+          Map.get(gps, "city") ||
+            Map.get(gps, "town") ||
+            Map.get(gps, "municipality") ||
+            Map.get(gps, "village") ||
+            Map.get(gps, "hamlet") ||
+            Map.get(gps, "locality") ||
+            Map.get(gps, "croft"),
+        state: Map.get(gps, "state"),
+        country: Map.get(gps, "country"),
         camera: camera,
         ext: Files.file_extension(file),
         original: Files.file_name(file)
       }
 
-      format
+      new_path =
+        format
+        |> String.replace("\\", "/")
+        |> Format.compile(format_data)
+        |> String.trim_leading("/")
+        |> Files.clean_filename()
+
+      full_path = dest <> "/" <> new_path
+      path_parts = Path.split(full_path)
+
+      dest_dir =
+        (path_parts -- [List.last(path_parts)])
+        |> Enum.join("/")
+        |> String.replace("//", "/")
+
+      if !File.dir?(dest_dir) do
+        case File.mkdir_p(dest_dir) do
+          :ok -> :ok
+          {:error, _} -> exit(:error)
+        end
+      end
+
+      case move do
+        true -> File.rename(file, full_path)
+        false -> File.copy(file, full_path)
+      end
+
+      {file, full_path}
       |> IO.inspect()
     else
       _ -> exit(:error)
