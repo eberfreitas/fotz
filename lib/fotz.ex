@@ -136,8 +136,8 @@ defmodule Fotz do
         month: date.month |> to_string() |> String.pad_leading(2, "0"),
         day: date.day |> to_string() |> String.pad_leading(2, "0"),
         hour: date.hour |> to_string() |> String.pad_leading(2, "0"),
-        minutes: date.minute |> to_string() |> String.pad_leading(2, "0"),
-        seconds: date.second |> to_string() |> String.pad_leading(2, "0"),
+        minute: date.minute |> to_string() |> String.pad_leading(2, "0"),
+        second: date.second |> to_string() |> String.pad_leading(2, "0"),
         hash: hash,
         smallhash: String.slice(hash, 0..3),
         city:
