@@ -17,6 +17,16 @@ defmodule Fotz.GPSTest do
     {:ok, gps} = GPS.gps("51 deg 29' 25.8\" N", "0 deg 01' 02.7\" W", "dummy", nil)
 
     assert Enum.empty?(gps) == false
+
+    dummy = %{
+      "GPSPosition" => "51 deg 29' 25.8\" N, 0 deg 01' 02.7\" W",
+      "GPSLatitude" => "51 deg 29' 25.8\" N",
+      "GPSLongitude" => "0 deg 01' 02.7\" W"
+    }
+
+    {:ok, gps} = GPS.gps(dummy, "dummy", nil)
+
+    assert Enum.empty?(gps) == false
   end
 
   test "trying to get gps without api key" do

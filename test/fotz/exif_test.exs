@@ -5,6 +5,10 @@ defmodule Fotz.ExifTest do
 
   doctest Fotz.Exif
 
+  test "is exif available?" do
+    assert Exif.exiftool?() == true
+  end
+
   test "gets exif data" do
     {:ok, exif} = Exif.exif("./test/_samples/001.jpg")
 
@@ -19,6 +23,8 @@ defmodule Fotz.ExifTest do
     {:ok, exif} = Exif.exif("./test/_samples/subdir/002.jpg")
 
     assert Exif.get_date(exif) == {:ok, ~N[2002-01-01 12:00:00]}
+
+    assert Exif.get_date(%{"NoDate" => true}) == :error
   end
 
   test "get camera" do
