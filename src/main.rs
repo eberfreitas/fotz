@@ -3,17 +3,18 @@ extern crate clap;
 use clap::{App, Arg, ArgMatches};
 use glob::{glob, Paths, PatternError};
 use is_executable::IsExecutable;
+use serde_json::map::Map;
 use serde_json::Value;
 use std::path::{Path, PathBuf};
 use std::process::{Command, Output};
 
 struct FileData {
-    year: String,
-    month: String,
-    day: String,
-    hour: String,
-    minute: String,
-    second: String,
+    year: u16,
+    month: u8,
+    day: u8,
+    hour: u8,
+    minute: u8,
+    second: u8,
     hash: String,
     smallhash: String,
     city: Option<String>,
@@ -86,8 +87,12 @@ fn main() {
     paths.sort_unstable();
     paths.dedup();
 
+    println!("Found {} image(s)", paths.len());
+
     for p in paths {
-        let _ = get_file_info(&exiftool, &p);
+        let exif_data = get_file_exif_data(&exiftool, &p);
+
+        println!("{:?}", exif_data);
     }
 }
 
@@ -100,16 +105,20 @@ fn has_exiftool(path: &str) {
     }
 }
 
-fn get_file_info(exiftool: &str, path: &Path) {
+fn get_file_exif_data(exiftool: &str, path: &Path) -> Value {
     let output: Output = Command::new(exiftool)
         .arg("-q")
         .arg("-json")
         .arg(path)
         .output()
-        .expect("Could not run ExifTool on the given path.");
+        .expect("Could not run ExifTool on the given file.");
 
-    let json: String = String::from_utf8(output.stdout).expect("Invalid JSON data.");
+    let json: String = String::from_utf8(output.stdout).expect("Invalid JSON data from ExifTool.");
     let val: Value = serde_json::from_str(&json).expect("Error parsing JSON value.");
 
-    println!("{:?}", val);
+    if let Some(data) = val.get(0) {
+        data.to_owned()
+    } else {
+        Value::Object(Map::new())
+    }
 }
