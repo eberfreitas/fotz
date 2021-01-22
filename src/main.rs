@@ -77,9 +77,8 @@ fn main() {
         entries = glob(&format!("{}/**/*.{}", source_dir, ext));
 
         for entry in entries.unwrap() {
-            match entry {
-                Ok(path) => paths.push(path),
-                Err(_e) => {}
+            if let Ok(path) = entry {
+                paths.push(path)
             }
         }
     }
@@ -115,10 +114,11 @@ fn get_file_exif_data(exiftool: &str, path: &Path) -> Value {
 
     let json: String = String::from_utf8(output.stdout).expect("Invalid JSON data from ExifTool.");
     let val: Value = serde_json::from_str(&json).expect("Error parsing JSON value.");
-
-    if let Some(data) = val.get(0) {
-        data.to_owned()
+    let r: Option<Value> = if let Value::Array(arr) = val {
+        arr.into_iter().next()
     } else {
-        Value::Object(Map::new())
-    }
+        None
+    };
+
+    r.unwrap_or_else(|| Value::Object(Map::new()))
 }
